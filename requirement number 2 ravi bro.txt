@@ -1,0 +1,27 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.CustomFieldManager
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.CustomFieldManager;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.IssueManager;
+import com.atlassian.jira.issue.Issue;
+import org.apache.log4j.Level;
+
+// setting the logging level to INFO 
+log.setLevel(Level.INFO);
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def cField = customFieldManager.getCustomFieldObjectByName("Master Feature Name")
+def cFieldValue = issue.getCustomFieldValue(cField).toString()
+log.info(cFieldValue)
+def userManager = ComponentAccessor.getUserManager()
+CustomField CF = customFieldManager.getCustomFieldObjectByName("Product Manager");
+
+if (cFieldValue.equalsIgnoreCase("API's")) {
+    def userObject= userManager.getUserByName('bhagyarajk');
+    issue.setCustomFieldValue(CF, userObject);
+}
+else if (cFieldValue.equalsIgnoreCase("MCData")) {
+        def userObject= userManager.getUserByName('akshayk');
+    issue.setCustomFieldValue(CF, userObject);
+}

@@ -1,0 +1,43 @@
+Implementation without the rest call (Probably the best way that I always recommend) :
+* This way of implementation is better for error handling as well
+* For this we can use the Sequence post function to run the series of post functions one after the other 
+* For our used case I will run three post functions in series
+* 1. First one for cloning N number of issues for N+1 number of components 
+* 2. Second one for setting the assignee as the automatic assignee 
+* 3. The third one is for updating the main issue to have only one component (updating the component field it self)
+
+-----------------------------------------------------------------------------------------------------
+
+1. Cloning N times : 
+-----------------------
+
+a. Iterator:
+
+{{issue.fields.components.slice(1) | join("," , "name")}}
+
+b. Summary: Set to:
+
+CLONE - {{issue.fields.summary}}
+
+c. Components: Set to:
+
+{{it}}
+
+d. Run this post-function conditionally:
+
+{{ not not issue.fields.components.length }}
+
+
+2. Setting the assignee to Automatic : 
+----------------------------------------
+
+a. The value(s) of field Assignee of the current issue will be set to:
+
+accountId:-1
+
+3. Update the component field of main issue : 
+-------------------------------------
+
+a. The value(s) of field Components of the current issue will be set to:
+
+{{issue.fields.components.slice(0,1) | join("," , "name")}}

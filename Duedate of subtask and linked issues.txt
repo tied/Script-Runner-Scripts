@@ -1,0 +1,83 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.Issue
+import com.atlassian.jira.issue.link.IssueLink
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.link.IssueLinkManager
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.Issue
+import java.sql.*
+import com.atlassian.jira.issue.MutableIssue
+
+
+
+
+def issueLinkManager = ComponentAccessor.getIssueLinkManager()
+def issueManager = ComponentAccessor.getIssueManager()
+def issueService = ComponentAccessor.getIssueService()
+
+
+
+ 
+
+issueLinkManager.getInwardLinks(issue.id).findAll {
+ it.issueLinkType.name == "parent-child"}.each {
+   	 log.warn("Parent issue link  Datedate .... : "+ it.getSourceObject().dueDate)
+     log.warn("Child issue link Duedate .... : " + it.getDestinationObject().dueDate)
+     
+    if(it.getDestinationObject().dueDate > it.getSourceObject().dueDate){
+             def user = ComponentAccessor.getJiraAuthenticationContext().getUser()
+     def newDueDate = it.getDestinationObject().dueDate.format("dd/MMM/yy")
+     def issueInputParameters = issueService.newIssueInputParameters().setDueDate(newDueDate)
+	 def updateValidationResult = issueService.validateUpdate(user, it.getSourceObject().id, issueInputParameters)
+
+    if (updateValidationResult.isValid()) {
+        issueService.update(user, updateValidationResult)
+    } else {
+        log.warn updateValidationResult.errorCollection.errors
+        log.warn('entered into errors section')
+    }
+         log.warn('executed till the end ')
+    }
+}
+
+log.warn(issue.issueType.name);
+
+if(issue.issueType.name.equalsIgnoreCase('Sub-task')) {
+    //Get parent 
+MutableIssue issue = issue;
+MutableIssue parentIssue = issue.getParentObject();
+
+MutableIssue subtaskWithMaxDueDate = returnMostFutureDate(parentIssue, issue);
+
+//Get max due date of all subtasks and set the parent's due date
+if( (subtaskWithMaxDueDate.getDueDate() != null) && !(subtaskWithMaxDueDate.getDueDate().equals(parentIssue.getDueDate())) && !(parentIssue.getDueDate() > subtaskWithMaxDueDate.getDueDate() )) {    
+     def dateToSet = subtaskWithMaxDueDate.dueDate.format("d/MMM/yy");
+     updateDueDate(parentIssue, dateToSet);
+     log.info("Updated parent issue ${parentIssue} due date");
+}
+
+
+}
+def returnMostFutureDate(def parentIssue, def currentIssue) {
+    issueWithLatestDate = currentIssue;
+    for(Issue subtask : parentIssue.getSubTaskObjects()) {        
+       if( (subtask.getDueDate() != null) && (subtask.getDueDate().after(issueWithLatestDate.getDueDate()))) {            
+            issueWithLatestDate = subtask;
+       }
+    } 
+    return issueWithLatestDate;
+}
+
+def updateDueDate (def issue, def dueDateParam) { 
+    def issueService = ComponentAccessor.getIssueService() 
+    def issueInputParameters = issueService.newIssueInputParameters() 
+    def user = ComponentAccessor.getJiraAuthenticationContext().loggedInUser  
+    issueInputParameters.with { dueDate = dueDateParam } 
+    
+    def validationResult = issueService.validateUpdate(user, issue.id, issueInputParameters) 
+
+    assert !validationResult.errorCollection.hasAnyErrors() 
+    issueService.update(user, validationResult) 
+    log.debug "Subtask ${issue.key} updated"
+
+}

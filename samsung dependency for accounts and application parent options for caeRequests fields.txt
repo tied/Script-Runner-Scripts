@@ -1,0 +1,45 @@
+import com.onresolve.jira.groovy.user.FormField
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+
+
+// Getting The required fields
+FormField caeRequests = getFieldById("customfield_11605")
+FormField approvers = getFieldById("customfield_11605")
+
+
+
+// get the value of the device field 
+def value = caeRequests.getFormValue().toString()
+
+//Regex to match the selected options of the cascading fields 
+
+Pattern accountsPattern = Pattern.compile("11329");
+ Matcher accountsMatcher = accountsPattern.matcher(value);
+ boolean isAccounts = accountsMatcher.find();
+
+Pattern applicationPattern = Pattern.compile("11330");
+ Matcher applicationMatcher = applicationPattern.matcher(value);
+ boolean isApplication = applicationMatcher.find();
+ 
+
+
+
+
+
+if (isAccounts || isApplication) {
+
+
+        		approvers.setHidden(false);
+    			approvers.setRequired(true);
+
+}
+else {
+        		approvers.setHidden(true)
+    			approvers.setRequired(false)
+    			approvers.setFormValue(null)
+
+}
+

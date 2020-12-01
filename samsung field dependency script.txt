@@ -1,0 +1,89 @@
+import com.onresolve.jira.groovy.user.FormField
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+
+
+// Getting The required fields
+FormField deviceRequest = getFieldById("customfield_11510")
+FormField laptop = getFieldById("customfield_11204")
+
+
+
+// get the value of the device field 
+def value = deviceRequest.getFormValue().toString()
+
+//Regex to match the selected options of the cascading fields 
+Pattern laptopPattern = Pattern.compile("11278");
+ Matcher laptopMatcher = laptopPattern.matcher(value);
+ boolean isLaptop = laptopMatcher.find();
+
+Pattern ipphonePattern = Pattern.compile("11281");
+ Matcher ipphoneMatcher = ipphonePattern.matcher(value);
+ boolean isIpphone = ipphoneMatcher.find();
+ 
+ Pattern montorPattern = Pattern.compile("11280");
+ Matcher montorMatcher = montorPattern.matcher(value);
+ boolean isMonitor = montorMatcher.find();
+
+
+
+
+
+if (isLaptop && !value.equalIgnoreCase('[11278, 11282]') ) {
+
+
+        		laptop.setHidden(false);
+    			laptop.setRequired(true);
+    			
+				ipphone.setHidden(true);
+    			ipphone.setRequired(false);
+    			ipphone.setFormValue(null);
+				
+				monitor.setHidden(true);
+    			monitor.setRequired(false);
+    			monitor.setFormValue(null);
+}
+else if (isIpphone && !value.equalIgnoreCase('[11281, 11289]')) {
+
+				 ipphone.setHidden(false);
+    			 ipphone.setRequired(true);
+				 
+        		 laptop.setHidden(true);
+    			 laptop.setRequired(false);
+    			 laptop.setFormValue(null);
+
+				 monitor.setHidden(true);
+    			 monitor.setRequired(false);
+    			 monitor.setFormValue(null);
+}
+else if (isMonitor && !value.equalIgnoreCase('[11280, 11288]') ) {
+
+				 monitor.setHidden(false);
+    			 monitor.setRequired(true);
+
+			     laptop.setHidden(true);
+    			 laptop.setRequired(false);
+    			 laptop.setFormValue(null);
+				 
+				 ipphone.setHidden(true);
+    			 ipphone.setRequired(false);
+    			 ipphone.setFormValue(null);
+
+
+}
+else {
+        		laptop.setHidden(true)
+    			laptop.setRequired(false)
+    			laptop.setFormValue(null)
+				
+    			ipphone.setHidden(true)
+    			ipphone.setRequired(false)
+    			ipphone.setFormValue(null)
+				
+			     monitor.setHidden(true);
+    			 monitor.setRequired(false);
+    			 monitor.setFormValue(null);
+}
+

@@ -1,0 +1,17 @@
+queues for jira service desk --> addon is there 
+cross project queues 
+
+automation for jira ---> 
+
+send mail for mail id just like dl 
+
+jmwe --> 
+mandate, 
+
+native automation
+
+soc --> xsoar 
+prisma --> 
+
+
+jsoftware --> ticket status  --> jsd ticket then jira software ticket should not move to any other status
