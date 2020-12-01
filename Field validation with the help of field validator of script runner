@@ -1,0 +1,12 @@
+import com.opensymphony.workflow.InvalidInputException
+import com.atlassian.jira.component.ComponentAccessor
+
+
+// Getting the value of the field and issue object is dynamically fetched (that's during runtime) so add in validator (so ignore the error)
+def customFieldValues = issue.getCustomFieldValue(ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Critical Value"))
+
+// Write down the validation condition here 
+if (customFieldValues > 9999) { 
+  invalidInputException = new InvalidInputException("The value exceeded 9999")
+throw invalidInputException
+}

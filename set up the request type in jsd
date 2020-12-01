@@ -1,0 +1,27 @@
+import com.atlassian.jira.component.ComponentAccessor
+
+
+// The value of the field must be of the below form so better run the query to under stand the more
+
+
+
+/* SELECT STRINGVALUE, COUNT(*) FROM jiraissue i
+LEFT JOIN customfieldvalue cfv
+ON i.id = cfv.ISSUE
+where cfv.customfield = (select id from customfield where cfname = 'Customer Request Type') 
+GROUP BY STRINGVALUE; */
+
+
+// if you want to use this in the transition then make sure you add it before the create issue originally post function 
+
+def customerRequestTypeValue = "pfcrt/getithelp"
+
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def requestTypeObject = customFieldManager.getCustomFieldObjectByName("Customer Request Type")
+
+
+// get the id of the cf in the logs in order to use it for finding the key of the Customer Request Type
+log.info("Customer Request Type Custom field Id: ${requestTypeObject.getId()}")
+
+def requestType = requestTypeObject.getCustomFieldType().getSingularObjectFromString(customerRequestTypeValue )
+issue.setCustomFieldValue(requestTypeObject, requestType)

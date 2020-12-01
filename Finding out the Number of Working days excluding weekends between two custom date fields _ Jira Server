@@ -1,0 +1,77 @@
+import com.atlassian.jira.component.ComponentAccessor
+import java.sql.Timestamp
+// Get the required component
+def customFieldManager = ComponentAccessor.customFieldManager
+
+//The name of the lower date custom field
+
+final String lowerDateFieldName = "Lower Date Custom Field"
+//The name of the higher date custom field
+
+final String higherDateFieldName = "Higher Date Custom Field"
+
+//Get the custom field objects
+
+def lowerDate = customFieldManager.getCustomFieldObjects(issue).find { it.name == lowerDateFieldName }
+def higherDate = customFieldManager.getCustomFieldObjects(issue).find { it.name == higherDateFieldName }
+if (!lowerDate || !higherDate) {
+log.warn "Could not find one ore more of the provided custom fields"
+return null
+}
+
+//Get the date values of the fields
+
+def lowerDateValue = issue.getCustomFieldValue(lowerDate) as Timestamp
+def higherDateValue = issue.getCustomFieldValue(higherDate) as Timestamp
+
+log.warn("This the lower date :  "+lowerDateValue )
+log.warn("This is the higher date : "+higherDateValue)
+
+// The method to find out the working days between the two fields
+//Here basically we will start checking the week of the dates from start date and will exclude if week of the day is sat or sunday other wise will increse the count 
+public static int getWorkingDaysBetweenTwoDates(Date startDate, Date endDate) {
+
+    Calendar startDateCalenderObject = Calendar.getInstance();
+    startDateCalenderObject.setTime(startDate);        
+
+    Calendar endDateCalenderObject = Calendar.getInstance();
+    endDateCalenderObject.setTime(endDate);
+
+    int workDays = 0;
+
+    //Return 0 if start and end are the same
+    if (startDateCalenderObject.getTimeInMillis() == endDateCalenderObject.getTimeInMillis()) {
+        return 0;
+    }
+
+    if (startDateCalenderObject.getTimeInMillis() > endDateCalenderObject.getTimeInMillis()) {
+        startDateCalenderObject.setTime(endDate);
+        endDateCalenderObject.setTime(startDate);
+    }
+while ({
+    startDateCalenderObject.add(Calendar.DAY_OF_MONTH, 1);
+        if (startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+            ++workDays;
+        }
+		startDateCalenderObject.getTimeInMillis() < endDateCalenderObject.getTimeInMillis()
+}()) continue
+    return workDays;
+}
+
+// Calling the method by passing lowerdate field value  and higher date field value  and as we are setting this value to a "text" field we need to cast the integer value to string 
+
+String workingDays = getWorkingDaysBetweenTwoDates(lowerDateValue,higherDateValue).toString();
+
+// Getting these custom field by name of the field 
+
+def customFieldObject = customFieldManager.getCustomFieldObjectByName("Working Days");
+
+// Setting the value for that field 
+issue.setCustomFieldValue(customFieldObject,workingDays );
+log.warn("---------------------The code got executed successfully ---------------------");
+
+
+
+
+    
+

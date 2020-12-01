@@ -1,0 +1,13 @@
+order of execution in java --> general flow when there is a main method ...
+=====================================================================================
+
+1. generally static loading or class loading will happen ---> loaded into the stack memory 
+2. Block execution is first in java --> means as soon as the memory is allocated the blocks are executed non explicitely means in this case now the class loading is done
+so the memory is allocated for static members so static blocks gets executed 
+3. main method --> the third thing to happen is to start the execution of the main method --> main method is static becoz it should be available in the memory when the main threads calls it or invokes it 
+for execution 
+4. then the execution depends on what you did inside the main ....
+5. lets say now you have declared the non static member and the memory is allocated in the heap when you use the new operator
+6. once the memory is allocated the first thing is to execute the block as stated earlier ---> now the non static execution will happen 
+7. after this one the custructor is called 
+

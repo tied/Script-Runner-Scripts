@@ -1,0 +1,2 @@
+select
+iphone.model_name,iphone.price from iphone where model_name=?;

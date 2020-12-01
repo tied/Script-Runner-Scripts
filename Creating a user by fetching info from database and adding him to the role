@@ -1,0 +1,69 @@
+import com.onresolve.scriptrunner.db.DatabaseUtil;
+import groovy.transform.BaseScript;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.util.SimpleErrorCollection;
+import com.atlassian.jira.bc.projectroles.ProjectRoleService;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.security.roles.ProjectRoleActor;
+import com.atlassian.jira.security.roles.ProjectRoleManager;
+import com.atlassian.jira.util.SimpleErrorCollection;
+import com.atlassian.jira.bc.projectroles.ProjectRoleService;
+import com.atlassian.jira.security.roles.ProjectRole;
+import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.project.Project;
+
+// name and email of the customers in the database 
+def name;
+def email;
+
+// User keys for respective username in the jira's database 
+def userKey;
+def key;
+def actors;
+
+// To get the project role
+def projectManager = ComponentAccessor.getProjectManager()
+def projectRoleService = ComponentAccessor.getComponent(ProjectRoleService)
+def projectRoleManager = ComponentAccessor.getComponent(ProjectRoleManager)
+def errorCollection = new SimpleErrorCollection()
+def project = projectManager.getProjectObjByKey("SDT")
+def projectRole = projectRoleManager.getProjectRole("Service Desk Customers")
+
+// To get the user info from data source configured 
+def userUtil = ComponentAccessor.getUserUtil()
+def userInfo = DatabaseUtil.withSql('MySql_Employee_Database') { sqlUser->
+    sqlUser.query("select customer_name,customer_email from customer where customer_id = 25") {
+        resultSetUser ->
+        while (resultSetUser.next())  {
+              name= resultSetUser.getString("customer_name").toString();
+              email = resultSetUser.getString("customer_email").toString();
+            
+            // Creating the user 
+              userUtil.createUserNoNotification(name,"jira",email,name);
+            
+                    // To get the user key from the user name by the jira's database 
+                    userKey = DatabaseUtil.withSql('Local Data Source') { sqlKey->
+                    sqlKey.query("select user_key from app_user where lower_user_name = '"+name+"';") {
+                    resultSetKey ->
+                    while (resultSetKey.next())  {
+                    key= resultSetKey.getString("user_key").toString();
+                       
+                        // Adding the user to a role
+                        projectRoleService.addActorsToProjectRole([key],
+                        projectRole,
+                        project,
+                        ProjectRoleActor.USER_ROLE_ACTOR_TYPE,
+                        errorCollection)
+
+                                       }
+                  					}
+               					}
+        }
+    }
+}
+return key;
+return errorCollection;
+
+
+            
+          

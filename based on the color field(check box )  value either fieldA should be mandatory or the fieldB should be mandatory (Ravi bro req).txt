@@ -1,0 +1,43 @@
+import com.onresolve.jira.groovy.user.FormField
+
+// Getting The required fields
+FormField favColors = getFieldById("customfield_10300")
+FormField fieldA = getFieldById("customfield_10301")
+FormField fieldB = getFieldById("customfield_10302")
+
+// get the value of the fav color field 
+def value = favColors.getFormValue().toString()
+
+switch(value) {
+
+    case '10200':
+    			fieldA.setHidden(false);
+    			fieldA.setRequired(true);
+    			fieldB.setHidden(true);
+    			fieldB.setRequired(false);
+    			fieldB.setFormValue(null);
+    			break;
+    
+    case '10201':
+    			 fieldA.setHidden(true);
+    			 fieldA.setRequired(false);
+    			 fieldA.setFormValue(null);
+    			 fieldB.setHidden(false);
+    			 fieldB.setRequired(true);
+    			break;
+    
+    case '[10200, 10201]':
+    			fieldA.setHidden(false);
+    			fieldA.setRequired(true)
+    			fieldB.setHidden(false);
+    			fieldB.setRequired(true)
+    			break;
+
+    default : 
+    			fieldA.setHidden(true)
+    			fieldA.setRequired(false)
+    			fieldA.setFormValue(null)
+    			fieldB.setHidden(true)
+    			fieldB.setRequired(false)
+    			fieldB.setFormValue(null)
+}

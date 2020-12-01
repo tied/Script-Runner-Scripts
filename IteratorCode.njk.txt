@@ -1,0 +1,25 @@
+{{issue.fields.components.slice(1) | join("," , "name")}}
+{% if issue.fields.components.slice(1) | join("," , "name") %}
+{{ "/rest/api/3/issue/:issue" | callJira(verb=("put"),
+params={"issue":issue.key}
+,
+
+headers = {
+"Content-Type": "application/json"
+}
+,
+body={
+
+"fields": {
+       "assignee":{"accountId":"-1"}
+   }
+   ,
+ "update" : {
+        "components" : [{"set" : [{"name" : issue.fields.components.slice(0,1) | join("," , "name")}]}]
+    }
+
+
+}) }}
+
+{% endif %}
+

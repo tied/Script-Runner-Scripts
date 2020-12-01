@@ -1,0 +1,32 @@
+package com.onresolve.jira.groovy.test.scriptfields.scripts
+import org.apache.log4j.Level;
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.CustomFieldManager
+import com.atlassian.jira.user.util.DefaultUserManager
+import com.atlassian.jira.issue.Issue
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.issue.comments.CommentManager
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.util.ImportUtils
+import com.atlassian.jira.user.util.DefaultUserManager
+import com.atlassian.crowd.embedded.api.User
+import com.atlassian.jira.issue.IssueManager
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.user.util.UserManager
+
+def userManager = ComponentAccessor.userManager
+def components = issue.componentObjects.toList()
+// setting the logging level to INFO 
+log.setLevel(Level.INFO);
+log.info("starting the execution..")
+if (components) {
+  def lead = components?.first()?.componentLead.getDirectoryUser()
+  def leadUser = userManager.getUser(lead.name)
+
+  IssueManager issueManager = ComponentAccessor.getIssueManager();
+  CustomFieldManager customFieldManager = ComponentAccessor.getCustomFieldManager();
+  CustomField CF = customFieldManager.getCustomFieldObjectByName("Component Lead");
+  issue.setCustomFieldValue(CF, leadUser);
+  log.info(leadUser)
+  log.info("executed till the last line")
+}
