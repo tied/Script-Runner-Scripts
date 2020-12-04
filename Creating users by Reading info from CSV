@@ -1,0 +1,112 @@
+import org.apache.commons.validator.routines.EmailValidator;
+import com.onresolve.scriptrunner.db.DatabaseUtil;
+import groovy.transform.BaseScript;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.util.SimpleErrorCollection;
+import com.atlassian.jira.bc.projectroles.ProjectRoleService;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.security.roles.ProjectRoleActor;
+import com.atlassian.jira.security.roles.ProjectRoleManager;
+import com.atlassian.jira.util.SimpleErrorCollection;
+import com.atlassian.jira.security.roles.ProjectRole;
+import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.project.Project;
+import org.apache.log4j.Logger;
+import com.atlassian.jira.exception.*;
+import java.time.LocalDate;
+import org.apache.log4j.Level;
+
+// contact and email of the customers in the csv file
+def contact;
+def email;
+
+// User keys for respective username in the jira's database 
+def userKey;
+def key;
+def actors;
+
+// Row number of the csv file
+int rowNumber = 1;
+
+// To get the project role
+def projectManager = ComponentAccessor.getProjectManager();
+def projectRoleService = ComponentAccessor.getComponent(ProjectRoleService);
+def projectRoleManager = ComponentAccessor.getComponent(ProjectRoleManager);
+def errorCollection = new SimpleErrorCollection();
+def project = projectManager.getProjectObjByKey("SDT");
+def projectRole = projectRoleManager.getProjectRole("Service Desk Customers");
+
+// To validate email id of the user
+EmailValidator validator = EmailValidator.getInstance();
+
+// setting the logging level to INFO 
+log.setLevel(Level.INFO);
+
+// To get the user info from data source configured 
+def userUtil = ComponentAccessor.getUserUtil();
+
+def userInfo = DatabaseUtil.withSql('CSV_datasource') {
+    // reading csv file with today's date 
+    sqlUser ->
+        sqlUser.query("select * from " + java.time.LocalDate.now().toString() + ";") {
+            resultSetUser ->
+
+                while (resultSetUser.next()) {
+                    rowNumber++;
+
+                    email = resultSetUser.getString("ï»¿email_id").toString();
+                    contact = resultSetUser.getString("contact").toString();
+
+                    if (validator.isValid(email)) {
+
+                        try {
+                            
+                            // creation of user and sending notification 
+                            userUtil.createUserWithNotification(contact, "jira", email, contact, 1);
+
+                            log.info("----------Creating User----------");
+
+                            // To get the user key from the user name by the jira's database 
+                            userKey = DatabaseUtil.withSql('Local Data Source') {
+                                sqlKey ->
+                                    sqlKey.query("select user_key from app_user where lower_user_name = '" + contact + "';") {
+                                        resultSetKey ->
+                                            while (resultSetKey.next()) {
+                                                key = resultSetKey.getString("user_key").toString();
+
+
+
+                                                // Adding the user to a role
+                                                projectRoleService.addActorsToProjectRole([key],
+                                                    projectRole,
+                                                    project,
+                                                    ProjectRoleActor.USER_ROLE_ACTOR_TYPE,
+                                                    errorCollection);
+
+                                                userUtil.removeUserFromGroup(userUtil.getGroup("jira-software-users"), userUtil.getUser(contact));
+                                                log.info(contact + " Created Successfully");
+
+
+                                            }
+                                    }
+                            }
+
+
+
+
+                        } catch (CreateException e) {
+
+                            log.info("Duplicate Contact found : '" + contact + "' at Row Number : " + rowNumber);
+
+                        }
+                    } else
+                        log.info("Invalid mail adress found at Row Number : " + rowNumber);
+                }
+
+
+        }
+
+
+    return "Check The Log For More Information";
+
+}

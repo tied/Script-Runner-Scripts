@@ -1,0 +1,30 @@
+import groovy.json.StreamingJsonBuilder
+import com.atlassian.jira.bc.issue.IssueService
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.IssueInputParameters
+import com.atlassian.jira.user.ApplicationUser
+
+// Authentication Using base64 Encoder 
+def authString = "Bhagyarajk:admin".getBytes().encodeBase64().toString()
+
+// To Dynamically get the Parent Issue Data 
+IssueService issueService = ComponentAccessor.getIssueService()
+IssueInputParameters issueInputParameters = issueService.newIssueInputParameters();
+def issue = ComponentAccessor.getIssueManager().getIssueByCurrentKey("BP-7")
+
+// The Body Of the Json
+def jsonBody = "{\n\"fields\": {\n        \"project\": {\n            \"id\": \"${issue.getProjectObject().getId()}\"\n        },\n        \"summary\": \"something\'s wrong\",\n\n         \"parent\":\n        {\n            \"id\": \"${issue.getId()}\"\n        },\n\n\n        \"issuetype\": {\n            \"id\": \"10003\"\n        }\n}\n}"
+def connection = new URL("http://localhost:8080/rest/api/2/issue/").openConnection() as HttpURLConnection
+connection.setRequestMethod( "POST" )
+connection.setRequestProperty( "Authorization", "Basic ${authString}" )
+connection.doOutput = true
+connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+connection.getOutputStream().write(jsonBody.getBytes("UTF-8"))
+connection.connect()
+
+//getting HTTP Response Code
+def postResponseCode = connection.getResponseCode();
+if (postResponseCode.equals(201))
+    return "Subtask Issue got created successfully"
+else
+    return "Error During issue creation"

@@ -1,0 +1,20 @@
+import com.onresolve.jira.groovy.user.FormField
+
+// Getting The required fields
+FormField radioButton = getFieldById("customfield_10401")
+FormField colorField = getFieldById("customfield_10300")
+
+
+// If the radio button value is "Yes"
+if (radioButton.getFormValue() == "10200") { //Yes
+
+colorField.setHidden(false)
+
+}
+
+else {
+colorField.setHidden(true)
+colorField.setFormValue(null)
+    
+
+}

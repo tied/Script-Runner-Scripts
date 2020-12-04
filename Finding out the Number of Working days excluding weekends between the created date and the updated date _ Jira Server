@@ -1,0 +1,53 @@
+import com.atlassian.jira.component.ComponentAccessor
+
+// This is to  get the the Created and Updated dates of type Date
+
+Date createdDate = issue.getCreated();
+Date updatedDate =  new Date();
+log.warn("Created date : "+ createdDate);
+log.warn("Updated date : "+updatedDate);
+
+// The method to find out the working days between the two fields
+//Here basically we will start checking the week of the dates from start date and will exclude if week of the day is sat or sunday other wise will increse the count 
+public static int getWorkingDaysBetweenTwoDates(Date startDate, Date endDate) {
+
+    Calendar startDateCalenderObject = Calendar.getInstance();
+    startDateCalenderObject.setTime(startDate);        
+
+    Calendar endDateCalenderObject = Calendar.getInstance();
+    endDateCalenderObject.setTime(endDate);
+
+    int workDays = 0;
+
+    //Return 0 if start and end are the same
+    if (startDateCalenderObject.getTimeInMillis() == endDateCalenderObject.getTimeInMillis()) {
+        return 0;
+    }
+
+    if (startDateCalenderObject.getTimeInMillis() > endDateCalenderObject.getTimeInMillis()) {
+        startDateCalenderObject.setTime(endDate);
+        endDateCalenderObject.setTime(startDate);
+    }
+while ({
+    startDateCalenderObject.add(Calendar.DAY_OF_MONTH, 1);
+        if (startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+            ++workDays;
+        }
+		startDateCalenderObject.getTimeInMillis() < endDateCalenderObject.getTimeInMillis()
+}()) continue
+    return workDays;
+}
+
+// Calling the method by passing created and updated dates abd as we are setting this value to a "text" field we need to cast the integer value to string 
+
+String workingDays = getWorkingDaysBetweenTwoDates(createdDate,updatedDate).toString();
+
+// Getting these custom field by name of the field 
+def customFieldManager = ComponentAccessor.getCustomFieldManager();
+def customFieldObject = customFieldManager.getCustomFieldObjectByName("Working Days");
+
+// Setting the value for that field 
+issue.setCustomFieldValue(customFieldObject,workingDays );
+log.warn("working days"+ workingDays);
+log.warn("---------------------The code got executed successfully ---------------------");
+

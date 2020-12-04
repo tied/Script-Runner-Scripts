@@ -1,0 +1,64 @@
+import java.text.SimpleDateFormat;
+
+String createdDateInStringFormat = issue.fields.created;
+
+// Converting the String format to Date type
+Date createdDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(createdDateInStringFormat);
+logger.info("The Created Date is ${createdDate}");
+
+def updatedDate = new Date();
+logger.info("The Updated Date is ${updatedDate}");
+
+// Rest call to get all the field deatail
+def customFields = get("/rest/api/2/field")
+        .asObject(List)
+        .body
+        .findAll { (it as Map).custom } as List<Map>
+
+
+def customFieldId = customFields.find { it.name == 'Working Days' }?.id
+
+// The method to find out the working days between the two fields
+//Here basically we will start checking the week of the dates from start date and will exclude if week of the day is sat or sunday other wise will increse the count 
+public static int getWorkingDaysBetweenTwoDates(Date startDate, Date endDate) {
+
+	Calendar startDateCalenderObject = Calendar.getInstance();
+	startDateCalenderObject.setTime(startDate);
+
+	Calendar endDateCalenderObject = Calendar.getInstance();
+	endDateCalenderObject.setTime(endDate);
+
+	int workDays = 0;
+
+	//Return 0 if start and end are the same
+	if (startDateCalenderObject.getTimeInMillis() == endDateCalenderObject.getTimeInMillis()) {
+		return 0;
+	}
+
+	if (startDateCalenderObject.getTimeInMillis() > endDateCalenderObject.getTimeInMillis()) {
+		startDateCalenderObject.setTime(endDate);
+		endDateCalenderObject.setTime(startDate);
+	}
+	while ({
+		startDateCalenderObject.add(Calendar.DAY_OF_MONTH, 1);
+		if (startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startDateCalenderObject.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {++workDays;
+		}
+		startDateCalenderObject.getTimeInMillis() < endDateCalenderObject.getTimeInMillis()
+	} ()) continue
+	return workDays;
+}
+
+String workingDays = getWorkingDaysBetweenTwoDates(createdDate, updatedDate).toString();
+
+// Setting the field value through a rest call
+put("/rest/api/2/issue/${issue.key}") 
+    .queryString("overrideScreenSecurity", Boolean.TRUE) 
+    .header("Content-Type", "application/json")
+    .body([
+        fields:[
+                (customFieldId): workingDays
+        ]
+    ])
+    .asString()
+logger.info("********** The Number of working days between the Created and Updated date are : ${workingDays}");
+logger.info("******************** The code got executed successfully ********************");
