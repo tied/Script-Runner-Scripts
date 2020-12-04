@@ -1,0 +1,8 @@
+tfs migration to git (then to bitbucket)
+==================================================
+
+There are two types of migration possible 
+
+1. migrate the tip --> only migrate the latest version of the code and the history remains in old server 
+2. migrate with the full history --> trying to mimic the history in git 
+
