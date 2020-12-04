@@ -1,0 +1,20 @@
+
+// writing the condition so that the previous issue status was to do 
+
+com.atlassian.jira.issue.MutableIssue issue = issue;
+com.atlassian.jira.issue.Issue orgIssue=transientVars.get("originalissueobject");
+
+// The condition to check whether the transition is from to do or not 
+  orgIssue.getStatus().name.equalsIgnoreCase("To Do")
+
+
+
+
+
+// to set the epic link field of the newly created issue (epic is the main issue under transition )
+import com.atlassian.jira.component.ComponentAccessor
+com.atlassian.jira.issue.MutableIssue issue = issue;
+com.atlassian.jira.issue.Issue orgIssue=transientVars.get("originalissueobject");
+def epicLinkCustomField = ComponentAccessor.customFieldManager.getCustomFieldObjects(issue).findByName("Epic Link")
+log.warn(issue.key)
+issue.setCustomFieldValue(epicLinkCustomField, orgIssue)
